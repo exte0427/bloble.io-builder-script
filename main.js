@@ -1,5 +1,14 @@
 //unitList units units.filter(e=>e.owner === player.sid)
 
+// delete the ad
+document.getElementById(`smallAdContainer`).remove();
+
+// add bloble-builder ui
+const newDiv = document.createElement('div');
+newDiv.innerHTML = `<div style="position: absolute;z-index:100;left:50%;bottom:24px" id="emergency"><strong style="color:red">Emergency Mode On!</strong></div>`;
+document.body.appendChild(newDiv);
+document.getElementById(`emergency`).style.visibility = `hidden`;
+
 // unit control
 function moveSelUnits() {
     if (selUnits.length) {
@@ -64,7 +73,7 @@ const setBase = () => {
     makeList.map(e => makeUnit(e));
     setTimeout(() => {
         makeList.map(e => upUnit(e));
-    }, 700);
+    }, 400);
 }
 
 // emergency mode
@@ -91,6 +100,7 @@ let delOne = [];
 setInterval(() => {
     if (emergency) {
         nowData = getBuilding();
+        savedBase.map(e => makeUnit({ x: e.x, y: e.y, dir: e.dir, uPath: [1] }));
 
         //attacked
         if (nowData !== lastData) {
@@ -104,22 +114,30 @@ setInterval(() => {
         lastData = nowData;
     }
 }, time * 1000);
-setInterval(() => {
-    if (emergency)
-        delOne.map(e => makeUnit({ x: e.x, y: e.y, dir: e.dir, uPath: [1] }));
-}, time * 1000);
 
 const dis = 730;
+let timer = 0;
 setInterval(() => {
     const enemyList = getUnit().filter(e => e.owner !== player.sid).filter(e => (Math.abs(e.x - player.x) < 600 && Math.abs(e.y - player.y) < 600));
-    if (enemyList.length === 0 && emergency === true) {
-        console.log(`emergency mode end`);
-        endEm();
+    if (timer <= 0) {
+        if (enemyList.length === 0 && emergency === true) {
+            timer = 1;
+            console.log(`emergency mode end`);
+
+            document.getElementById(`emergency`).style.visibility = `hidden`;
+            document.getElementById(`unitList`).style.visibility = `visible`;
+            endEm();
+        }
+        if (enemyList.length !== 0 && emergency === false) {
+            timer = 1;
+            console.log(`emergency mode start`);
+            document.getElementById(`emergency`).style.visibility = `visible`;
+            document.getElementById(`unitList`).style.visibility = `hidden`;
+            startEm();
+        }
     }
-    if (enemyList.length !== 0 && emergency === false) {
-        console.log(`emergency mode start`);
-        startEm();
-    }
+    if (timer > 0)
+        timer--;
 }, 1000);
 
 //aft mode
